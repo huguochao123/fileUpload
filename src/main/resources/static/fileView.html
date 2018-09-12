@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> </head>
+<script type="text/javascript" src="js/jquery.js"></script>
+<style>
+	* {
+		margin: 0px;
+		padding: 0px;
+		font-size: 12px;
+	}
+	
+	.div1 {
+		width: 210px;
+		height: 210px;
+		float: left;
+		border: 1px #ccc ridge;
+		position: relative;
+	}
+	
+	[name=uploadImage] {
+		display: none;
+	}
+	
+	.div1 p {
+		cursor: pointer;
+		bottom: 0px;
+		position: absolute;
+		display: none;
+	}
+</style>
+
+<body>
+	<div id="ccc">
+		<div class="div1">
+			<button class="but">添加</button>
+			<input type="file" name="uploadImage" id="uploadImage" onchange="fileSelected(this)" />
+			<p class='p1'>删除</p>
+		</div>
+		<div class="div1">
+			<button class="but">添加</button>
+			<input type="file" name="uploadImage" id="uploadImage1" onchange="fileSelected(this)" />
+			<p class='p1'>删除</p>
+		</div>
+		<div class="div1">
+			<button class="but">添加</button>
+			<input type="file" name="uploadImage" id="uploadImage2" onchange="fileSelected(this)" />
+			<p class='p1'>删除</p>
+		</div>
+		<div class="div1">
+			<button class="but">添加</button>
+			<input type="file" name="uploadImage" id="uploadImage3" onchange="fileSelected(this)" />
+			<p class='p1'>删除</p>
+		</div>
+
+		<div class="div1">
+			<button class="but">添加</button>
+			<input type="file" name="uploadImage" id="uploadImage4" onchange="fileSelected(this)" />
+			<p class='p1'>删除</p>
+		</div>
+	</div>
+	<p><input type="button" onclick="commit()" value="上传" /></p>
+	<script>
+		var MAX_KB = 2048;
+
+		$(".but").click(function() {
+			$(this).next().click() //打开文件选择框
+		})
+
+		function fileSelected(obj) {
+			var file = $(obj).parent(".div1").find("[name=uploadImage]").get(0).files[0];
+			var read = new FileReader() // 创建FileReader对像;
+			read.readAsDataURL(file) // 调用readAsDataURL方法读取文件;
+			read.onload = function() {
+				url = read.result // 拿到读取结果;	
+				var img = new Image();
+				img.src = url;
+				var isUpload = false;
+				$(".div1 img").each(function(i, j) {
+					//获取已经选择的图片路径
+					var imgUrl = $(this).attr("src");
+					if(url == imgUrl) {
+						alert("此图片已经上传");
+						//将文件框内容清除
+						var fileDomain = $(obj).parent(".div1").find("input");
+						fileDomain.after(fileDomain.clone().val(""));
+						fileDomain.remove();
+						isUpload = true;
+					}
+				})
+				if(isUpload == false) {
+					$(obj).parent(".div1").find("button").css("display", "none")
+					$(obj).parent(".div1").append("<img src = " + url + " width=208 height= 190/>")
+					$(obj).parent(".div1").find("p").css("display", "block");
+				}
+			}
+
+		}
+		//ajax提交
+		function commit() {
+			var name = "zhangsan";
+			var formData = new FormData(); //创建formData对象
+			//获取所有图片
+			$("[name=uploadImage]").each(function(i, j) {
+				var image = $(this).get(0).files[0];
+
+				if(image != null && image != undefined && image != "") {
+					//文件上传key，统一用file
+					//1MB=1024KB 图片大小限制自己判断  在MAX_KB设置上传内容的大小
+					// var size = image.size // 读取字节数
+					// var sizeKb = (size/1024).toFixed(2);//将图片转换为kb
+					//alert("第"+(i+1)+"张图片超出上传限制，请删除重选图片")
+					formData.append("file", image)
+				}
+			})
+			console.log(formData.getAll("file"))
+			//普通数据，文件一起发送到后台
+			formData.append("name", name);
+			$.ajax({
+				url: '',
+				type: 'post', //必须是post提交
+				contentType: false, //不用管为什么要设置false，一言两语说不清，涉及到http
+				data: formData,
+				processData: false, //直接发送dom树
+				success: function(info) {},
+				error: function(err) {
+					console.log(err)
+				}
+			});
+		}
+		//删除图片,删除之前把div里面的内容还原到初始阶段，而后删除div，将删除之前的div里面的内容复制到新的div里面
+		$(".p1").click(function() {
+			var parentObj = $(this).parent(".div1");
+			parentObj.find("img").remove();
+			parentObj.find("button").css("display", "block");
+			parentObj.find("p").css("display", "none");
+			var divContext = parentObj.html();
+			parentObj.remove();
+			$("#ccc").append("<div class='div1'>" + divContext + "</div>")
+		});
+	</script>
+</body>
